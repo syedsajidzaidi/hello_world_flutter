@@ -42,3 +42,16 @@ final githubUsersProvider =
     AsyncNotifierProvider<GithubUsersNotifier, List<GithubUser>>(
   GithubUsersNotifier.new,
 );
+
+final searchQueryProvider = StateProvider<String>((_) => '');
+
+final filteredUsersProvider = Provider<AsyncValue<List<GithubUser>>>((ref) {
+  final usersAsync = ref.watch(githubUsersProvider);
+  final query = ref.watch(searchQueryProvider).toLowerCase().trim();
+  if (query.isEmpty) return usersAsync;
+  return usersAsync.whenData(
+    (users) => users
+        .where((u) => u.login.toLowerCase().contains(query))
+        .toList(),
+  );
+});
